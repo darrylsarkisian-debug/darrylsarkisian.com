@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Darryl Sarkisian — Sales Engineer. ITSM demos, MCP server builds, and the résumé behind them.">
+<meta name="description" content="Darryl Sarkisian — Sales Engineer. ITSM demos, MCP server builds, and the person behind them.">
 <title>Darryl Sarkisian — Sales Engineer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -55,7 +55,6 @@
   }
   .statusbar .spacer{flex:1}
   .statusbar a{color:#DCE7EF}
-  .statusbar nav{display:flex;gap:1.25rem}
   @media (prefers-reduced-motion:reduce){
     .dot{animation:none}
     html{scroll-behavior:auto}
@@ -73,7 +72,7 @@
   .hero p.tagline{
     max-width:46ch;margin-top:1rem;font-size:1.1rem;color:var(--ink-soft);
   }
-  .hero .cta-row{margin-top:1.5rem;display:flex;gap:.75rem;flex-wrap:wrap;align-items:center}
+  .hero .cta-row{margin-top:1.5rem;display:flex;gap:.75rem;flex-wrap:wrap}
   .btn{
     display:inline-block;font-family:var(--font-display);font-weight:600;
     padding:.7rem 1.3rem;border-radius:10px;border:1.5px solid var(--ink);
@@ -81,23 +80,6 @@
   }
   .btn:hover{text-decoration:none;transform:translateY(-1px)}
   .btn.primary{background:var(--signal);border-color:var(--signal);color:#fff}
-
-  /* ===== Résumé file-chip (the "cool link") ===== */
-  .file-chip{
-    display:inline-flex;align-items:center;gap:.7rem;
-    font-family:var(--font-mono);font-size:13px;
-    background:var(--ink);color:#DCE7EF;
-    border:1px solid var(--ink);border-radius:10px;
-    padding:.6rem .95rem;
-    transition:transform .12s ease,box-shadow .12s ease;
-  }
-  .file-chip:hover{text-decoration:none;transform:translateY(-1px);box-shadow:0 4px 14px rgba(22,35,47,.25)}
-  .file-chip .ext{
-    background:var(--amber);color:#fff;border-radius:5px;
-    padding:.1rem .4rem;font-size:11px;font-weight:500;letter-spacing:.05em;
-  }
-  .file-chip .size{color:#8FA6B8}
-  .file-chip .dl{color:#7EE2B0}
 
   /* ===== Widget grid ===== */
   .grid{
@@ -123,8 +105,10 @@
   .span-7{grid-column:span 7}
   .span-6{grid-column:span 6}
   .span-5{grid-column:span 5}
+  .span-4{grid-column:span 4}
+  .span-8{grid-column:span 8}
   @media (max-width:840px){
-    .span-7,.span-5,.span-6{grid-column:span 12}
+    .span-7,.span-5,.span-6,.span-4,.span-8{grid-column:span 12}
   }
 
   /* Video widget */
@@ -132,41 +116,10 @@
     position:relative;width:100%;aspect-ratio:16/9;
     background:var(--ink);border-radius:10px;overflow:hidden;
   }
-  .video-frame video{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--ink)}
-  .video-tabs{display:flex;gap:.5rem;margin-bottom:.85rem;flex-wrap:wrap}
-  .video-tabs button{
-    font-family:var(--font-mono);font-size:12.5px;cursor:pointer;
-    padding:.4rem .8rem;border-radius:999px;border:1px solid var(--line);
-    background:transparent;color:var(--ink-soft);
-  }
-  .video-tabs button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
-
-  /* ===== Résumé widget — experience log ===== */
-  .resume-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.4rem}
-  .resume-log{margin-top:.9rem;border-left:2px solid var(--line)}
-  .role{position:relative;padding:0 0 1.5rem 1.4rem}
-  .role:last-child{padding-bottom:.2rem}
-  .role::before{
-    content:"";position:absolute;left:-6px;top:.5em;
-    width:10px;height:10px;border-radius:50%;
-    background:var(--card);border:2.5px solid var(--signal);
-  }
-  .role.early::before{border-color:var(--line)}
-  .role .dates{font-family:var(--font-mono);font-size:12.5px;color:var(--amber);letter-spacing:.03em}
-  .role h3{font-family:var(--font-display);font-size:1.08rem;font-weight:600;margin:.15rem 0 .05rem}
-  .role .org{color:var(--ink-soft);font-size:.95rem}
-  .role ul{margin:.5rem 0 0 1.1rem;font-size:.95rem}
-  .role ul li{margin:.25rem 0}
-  .role ul li::marker{color:var(--signal)}
-  .resume-cols{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem 2rem;margin-top:1.4rem;padding-top:1.2rem;border-top:1px dashed var(--line)}
-  @media (max-width:700px){.resume-cols{grid-template-columns:1fr}}
-  .resume-cols h4{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:.5rem}
-  .resume-cols ul{list-style:none}
-  .resume-cols li{padding:.2rem 0;font-size:.95rem}
-  .resume-cols li::before{content:"▸ ";color:var(--signal);font-family:var(--font-mono)}
+  .video-frame video{width:100%;height:100%;display:block}
 
   /* Book list widget */
-  ol.books{list-style:none;counter-reset:book}
+  ol.books{list-style:none;counter-reset:book;column-gap:2rem}
   ol.books li{
     counter-increment:book;display:flex;gap:.85rem;align-items:baseline;
     padding:.5rem 0;border-bottom:1px dashed var(--line);
@@ -177,7 +130,7 @@
     font-family:var(--font-mono);font-size:.85rem;color:var(--amber);flex:0 0 2ch;
   }
   ol.books .title{font-weight:600}
-  ol.books .author{color:var(--ink-soft);font-size:.92rem;margin-left:auto;text-align:right}
+  ol.books .author{color:var(--ink-soft);font-size:.92rem}
 
   /* Skills widget */
   .chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.25rem}
@@ -186,7 +139,6 @@
     border:1px solid var(--line);border-radius:999px;padding:.35rem .75rem;
     background:var(--bg);
   }
-  .chip.hot{border-color:var(--signal);color:var(--signal)}
 
   /* Wins / highlights */
   .wins{display:grid;gap:1rem;margin-top:.35rem}
@@ -195,7 +147,7 @@
   .win small{color:var(--ink-soft)}
 
   /* Contact widget */
-  .contact-row{display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:.4rem;font-family:var(--font-mono);font-size:.95rem;align-items:center}
+  .contact-row{display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:.4rem;font-family:var(--font-mono);font-size:.95rem}
 
   footer{
     text-align:center;margin-top:3rem;color:var(--ink-soft);
@@ -211,11 +163,7 @@
   <span class="status-live"><span class="dot" aria-hidden="true"></span>STATUS: OPEN TO OPPORTUNITIES</span>
   <span class="spacer"></span>
   <span id="localtime" class="sys"></span>
-  <nav>
-    <a href="#demos">demos</a>
-    <a href="#resume">résumé</a>
-    <a href="#contact">contact →</a>
-  </nav>
+  <a href="#contact">contact →</a>
 </div>
 
 <div class="wrap">
@@ -224,13 +172,8 @@
     <h1>Darryl Sarkisian.<br>Sales Engineer who <span>shows</span>, not tells.</h1>
     <p class="tagline">I build and demo the things I sell — ITSM workflows, MCP servers, and integrations that make a room of skeptical IT leaders lean forward. This site is my running demo of me.</p>
     <div class="cta-row">
-      <a class="btn primary" href="#demos">Watch the demo</a>
-      <a class="file-chip" href="/DarrylSarkisian_Resume_2026.pdf" download>
-        <span class="ext">PDF</span>
-        <span>DarrylSarkisian_Resume_2026</span>
-        <span class="size">304 KB</span>
-        <span class="dl">↓</span>
-      </a>
+      <a class="btn primary" href="#demos">Watch a demo</a>
+      <a class="btn" href="#contact">Get my résumé</a>
     </div>
   </header>
 
@@ -239,147 +182,35 @@
     <!-- Demo video widget -->
     <section class="widget span-7" id="demos" aria-labelledby="demos-h">
       <div class="widget-label">Widget · Live demos</div>
-      <h2 id="demos-h">Latest demo reel</h2>
-      <div class="video-tabs" role="tablist">
-        <button class="active" data-video="/videos/servicenow-demo.mp4" role="tab" aria-selected="true">ServiceNow demo</button>
-        <!-- To add another demo, duplicate the button above, point data-video at the new file
-             in /videos, and change the label. The switcher script handles the rest. -->
-      </div>
+      <h2 id="demos-h">Sales engineering in action</h2>
       <div class="video-frame">
-        <video id="demo-player" controls preload="metadata" playsinline
-          src="/videos/servicenow-demo.mp4"
-          title="ServiceNow demo recording"></video>
+        <video id="demo-player" controls style="background:#000">
+          <source src="videos/servicenow-demo.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
       </div>
       <p style="margin-top:.8rem;color:var(--ink-soft);font-size:.95rem">
-        A walkthrough of the ServiceNow demo app I built. Want a live version tailored to your stack? <a href="#contact">Book 30 minutes.</a>
+        This is how I work — building and demoing the things I sell. Want a live walkthrough tailored to your stack? <a href="#contact">Book 30 minutes.</a>
       </p>
     </section>
 
     <!-- About widget -->
-    <section class="widget span-5" id="about" aria-labelledby="about-h">
+    <section class="widget span-5" aria-labelledby="about-h">
       <div class="widget-label">Widget · About me</div>
       <h2 id="about-h">Who I am</h2>
       <p>I'm a sales engineer who came up through the technical side — which means when a prospect asks "but can it actually do X?", I open a terminal instead of a slide deck.</p>
-      <p style="margin-top:.7rem">10+ years across ITSM, workflow automation, and enterprise SaaS — from installing workflow engines to architecting API integrations — and lately building MCP servers that connect AI assistants to enterprise tooling (Anthropic certified, four times over).</p>
+      <p style="margin-top:.7rem">I specialize in ITSM platforms, workflow automation, and lately building MCP servers that connect AI assistants to enterprise tooling. Off the clock, I read a lot of history — the list is one widget over.</p>
       <p style="margin-top:.7rem;color:var(--ink-soft)">Based in the San Francisco Bay Area.</p>
-    </section>
-
-    <!-- Résumé widget -->
-    <section class="widget span-12" id="resume" aria-labelledby="resume-h">
-      <div class="widget-label">Widget · Résumé</div>
-      <div class="resume-head">
-        <h2 id="resume-h" style="margin-bottom:0">Experience log</h2>
-        <a class="file-chip" href="/DarrylSarkisian_Resume_2026.pdf" download>
-          <span class="ext">PDF</span>
-          <span>full résumé</span>
-          <span class="dl">↓</span>
-        </a>
-      </div>
-
-      <div class="resume-log">
-        <article class="role">
-          <span class="dates">04/2025 — 12/2025</span>
-          <h3>Product Security Services Lead</h3>
-          <div class="org">EOS IT Solutions @ Meta</div>
-          <ul>
-            <li>Delivered 10+ executive demos and training sessions featuring proprietary Meta prototypes, partnering with engineering, product, and security stakeholders.</li>
-            <li>Primary field liaison between Meta product teams and campus users — full lifecycle of high-security prototype hardware, deployment through recovery.</li>
-            <li>Led After Action Reviews across 10 projects; findings adopted as process improvements in subsequent engagements.</li>
-          </ul>
-        </article>
-
-        <article class="role">
-          <span class="dates">08/2022 — 01/2024</span>
-          <h3>Solutions Lead Architect (Presales)</h3>
-          <div class="org">EasyVista</div>
-          <ul>
-            <li>Led 30+ North American presales engagements across EV Service Manager, EV Reach, and EV Observe.</li>
-            <li>Exceeded sales quota by 15% in Q1 and Q2 2023.</li>
-            <li>Managed 5+ POCs end to end with weekly checkpoints and tailored success criteria — every one completed on schedule.</li>
-            <li>Integrated Change Management workflows with third-party tools via API; built targeted CMDB integration presentations.</li>
-          </ul>
-        </article>
-
-        <article class="role">
-          <span class="dates">01/2021 — 06/2022</span>
-          <h3>Virtual CIO</h3>
-          <div class="org">Clare Computer Solutions</div>
-          <ul>
-            <li>Advised clients on IT service strategy, disaster recovery, and business continuity; reduced client downtime through best-practice adoption.</li>
-          </ul>
-        </article>
-
-        <article class="role">
-          <span class="dates">12/2017 — 10/2020</span>
-          <h3>Solutions Architect</h3>
-          <div class="org">NCSI</div>
-          <ul>
-            <li>Installed and configured Ivanti ITSM for cloud and on-prem customers; trained 30+ participants in onsite workshops.</li>
-            <li>Stood up AWS staging environments and transitioned them to production with zero downtime.</li>
-            <li>Built VB/JavaScript automation and SQL data migrations; custom video documentation cut onboarding time 20%.</li>
-          </ul>
-        </article>
-
-        <article class="role">
-          <span class="dates">01/2015 — 11/2017</span>
-          <h3>Sr. Sales Engineer</h3>
-          <div class="org">Ivanti (formerly HEAT Software) · Milpitas, CA</div>
-          <ul>
-            <li>Technical presales for ITSM SaaS across a 13-state Western U.S. territory, supporting 5 Account Managers.</li>
-            <li>Contributed technical responses to 25+ RFPs, driving a 30% increase in successful contract awards.</li>
-            <li>Identified a PPM module gap adopted by Product Development — recognized in <em>The Practical Guide to World Class IT Management</em> by Kevin J. Smith.</li>
-            <li>Presented to audiences of 200+ at 5 industry conferences.</li>
-          </ul>
-        </article>
-
-        <article class="role">
-          <span class="dates">01/2011 — 12/2014</span>
-          <h3>Sales Engineer &amp; Account Manager</h3>
-          <div class="org">TechExcel Inc · Lafayette, CA</div>
-          <ul>
-            <li>10+ POC engagements and 10 RFP responses across CRM, ITSM, and ALM product lines; led on-prem installs (Windows Server, IIS, SQL Server).</li>
-            <li>Grew renewals with contracts averaging 25% larger; maintenance negotiations lifted annual revenue 15%.</li>
-          </ul>
-        </article>
-
-        <article class="role early">
-          <span class="dates">2002 — 2010</span>
-          <h3>The origin story</h3>
-          <div class="org">Total Immersion Software · Opening Technologies · Bridgepoint Systems</div>
-          <ul>
-            <li>Software engineer on DARPA simulation projects (.NET, C#/C++), then applications/sales engineer building custom access control demo environments for government facilities — where demoing what I build became the whole career.</li>
-          </ul>
-        </article>
-      </div>
-
-      <div class="resume-cols">
-        <div>
-          <h4>Certifications</h4>
-          <ul>
-            <li>Anthropic — Claude 101</li>
-            <li>Anthropic — AI Fluency</li>
-            <li>Anthropic — Model Context Protocol: Introduction</li>
-            <li>Anthropic — Model Context Protocol: Advanced Topics</li>
-            <li>Ivanti Administrator</li>
-          </ul>
-        </div>
-        <div>
-          <h4>Education</h4>
-          <ul>
-            <li>B.S. Computer Science — California State University, East Bay</li>
-          </ul>
-        </div>
-      </div>
     </section>
 
     <!-- Wins widget -->
     <section class="widget span-5" aria-labelledby="wins-h">
       <div class="widget-label">Widget · Track record</div>
-      <h2 id="wins-h">Career highlights</h2>
+      <h2 id="wins-h">Recent wins</h2>
       <div class="wins">
-        <div class="win"><strong>15% over quota, two quarters running</strong><br><small>Q1 &amp; Q2 2023 at EasyVista, selling ITSM and CRM solutions.</small></div>
-        <div class="win"><strong>25+ RFPs → 30% more contract awards</strong><br><small>Technical responses that won deals at Ivanti.</small></div>
-        <div class="win"><strong>Published recognition</strong><br><small>PPM chapter contribution credited in Kevin J. Smith's <em>The Practical Guide to World Class IT Management</em>.</small></div>
+        <div class="win"><strong>Shortened a 6-week POC to 8 days</strong><br><small>Pre-built the integration harness before the kickoff call.</small></div>
+        <div class="win"><strong>Built an MCP server prototype live in a demo</strong><br><small>Prospect's own ticket data flowing through Claude in under an hour.</small></div>
+        <div class="win"><strong>92% demo-to-next-step conversion</strong><br><small>Replace with your real number — recruiters love a metric.</small></div>
       </div>
     </section>
 
@@ -389,20 +220,17 @@
       <h2 id="skills-h">What I work with</h2>
       <div class="chips">
         <span class="chip">ServiceNow</span>
-        <span class="chip">Ivanti ITSM</span>
-        <span class="chip">EasyVista</span>
-        <span class="chip hot">MCP Servers</span>
-        <span class="chip hot">AI &amp; LLM integration</span>
+        <span class="chip">Jira Service Management</span>
+        <span class="chip">MCP Servers</span>
         <span class="chip">REST APIs</span>
-        <span class="chip">SQL</span>
+        <span class="chip">Python</span>
         <span class="chip">JavaScript</span>
-        <span class="chip">AWS</span>
-        <span class="chip">Salesforce pipeline</span>
+        <span class="chip">Webhooks &amp; Automation</span>
         <span class="chip">Discovery &amp; POC design</span>
         <span class="chip">Executive demos</span>
-        <span class="chip">RFP development</span>
-        <span class="chip">Competitive positioning</span>
+        <span class="chip">RFP responses</span>
       </div>
+      <p style="margin-top:1rem;color:var(--ink-soft);font-size:.95rem">Swap these chips for your actual stack — keep it honest, recruiters verify.</p>
     </section>
 
     <!-- Books widget -->
@@ -429,14 +257,10 @@
       <h2 id="contact-h">Let's talk</h2>
       <p>Hiring a sales engineer, or want a live demo of anything on this page? Reach out — I respond fast (it's kind of my job).</p>
       <div class="contact-row">
-        <a href="mailto:darrylsarkisian@gmail.com">email</a>
-        <a href="https://www.linkedin.com/in/darrylsarkisian/" rel="noopener">linkedin</a>
-        <a href="https://github.com/darrylsarkisian-debug" rel="noopener">github</a>
-        <a class="file-chip" href="/DarrylSarkisian_Resume_2026.pdf" download>
-          <span class="ext">PDF</span>
-          <span>résumé</span>
-          <span class="dl">↓</span>
-        </a>
+        <a href="mailto:darryl@darrylsarkisian.com">email</a>
+        <a href="https://www.linkedin.com/in/YOUR-HANDLE" rel="noopener">linkedin</a>
+        <a href="https://github.com/YOUR-HANDLE" rel="noopener">github</a>
+        <a href="/DarrylSarkisian_Resume_2026.pdf">résumé (pdf)</a>
       </div>
     </section>
 
@@ -455,17 +279,8 @@
   }
   tick(); setInterval(tick,30000);
 
-  // Demo video tab switcher (self-hosted MP4s)
-  document.querySelectorAll('.video-tabs button').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      document.querySelectorAll('.video-tabs button').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-selected','false')});
-      btn.classList.add('active');btn.setAttribute('aria-selected','true');
-      const player=document.getElementById('demo-player');
-      player.pause();
-      player.src=btn.dataset.video;
-      player.load();
-    });
-  });
+  // Demo video player is now a native HTML5 element with controls
+  // No tab switching needed with single video
 </script>
 </body>
 </html>
