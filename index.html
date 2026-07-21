@@ -3,22 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Darryl Sarkisian — Sales Engineer. ITSM demos, MCP server builds, and the person behind them.">
-<title>Darryl Sarkisian — Sales Engineer</title>
+<meta name="description" content="Darryl Sarkisian — Sales Engineer, builder, and technical professional. ITSM systems, MCP servers, access control systems, and the thinking behind them.">
+<title>Darryl Sarkisian</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#F2F5F7;
+    --bg:#F7F9FB;
     --card:#FFFFFF;
-    --ink:#16232F;
-    --ink-soft:#4A5C6B;
-    --line:#DDE5EA;
-    --signal:#1F6FEB;      /* primary action blue */
-    --status:#1E9E63;      /* live-status green */
-    --amber:#C97A12;       /* highlight accent, used sparingly */
-    --radius:14px;
+    --ink:#1a2332;
+    --ink-soft:#526277;
+    --line:#E1E8F0;
+    --signal:#1F6FEB;
+    --accent:#C97A12;
+    --radius:12px;
     --font-display:"Space Grotesk",sans-serif;
     --font-body:"IBM Plex Sans",sans-serif;
     --font-mono:"IBM Plex Mono",monospace;
@@ -35,252 +34,233 @@
   }
   a{color:var(--signal);text-decoration:none}
   a:hover{text-decoration:underline}
-  a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-offset:3px;border-radius:4px}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-offset:3px}
 
-  /* ===== Console status bar (signature element) ===== */
-  .statusbar{
-    position:sticky;top:0;z-index:50;
-    background:var(--ink);color:#DCE7EF;
-    font-family:var(--font-mono);font-size:12.5px;
-    display:flex;align-items:center;gap:1.5rem;
-    padding:.55rem 1.25rem;flex-wrap:wrap;
+  /* ===== Clean header (no desperation) ===== */
+  header.navbar{
+    background:#fff;
+    border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:40;
+    padding:1rem 1.25rem;
   }
-  .statusbar .sys{color:#8FA6B8}
-  .status-live{display:flex;align-items:center;gap:.45rem;color:#7EE2B0}
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--status);box-shadow:0 0 0 0 rgba(30,158,99,.5);animation:pulse 2s infinite}
-  @keyframes pulse{
-    0%{box-shadow:0 0 0 0 rgba(30,158,99,.45)}
-    70%{box-shadow:0 0 0 9px rgba(30,158,99,0)}
-    100%{box-shadow:0 0 0 0 rgba(30,158,99,0)}
+  .navbar-inner{
+    max-width:1120px;margin:0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+    font-family:var(--font-mono);font-size:.9rem;
   }
-  .statusbar .spacer{flex:1}
-  .statusbar a{color:#DCE7EF}
-  @media (prefers-reduced-motion:reduce){
-    .dot{animation:none}
-    html{scroll-behavior:auto}
+  .navbar-brand{
+    font-weight:600;color:var(--ink)
   }
+  .navbar-links{
+    display:flex;gap:1.5rem;
+  }
+  .navbar-links a{color:var(--ink-soft)}
 
   /* ===== Layout ===== */
-  .wrap{max-width:1120px;margin:0 auto;padding:2.5rem 1.25rem 4rem}
-  header.hero{padding:2.5rem 0 2rem}
+  .wrap{max-width:1120px;margin:0 auto;padding:3rem 1.25rem 4rem}
+  
+  header.hero{padding:0 0 3rem}
   .hero h1{
     font-family:var(--font-display);
-    font-size:clamp(2.1rem,5vw,3.4rem);
-    font-weight:700;line-height:1.08;letter-spacing:-.02em;
+    font-size:clamp(2.2rem,5vw,3.2rem);
+    font-weight:700;line-height:1.1;letter-spacing:-.02em;margin-bottom:1.2rem;
   }
-  .hero h1 span{color:var(--signal)}
-  .hero p.tagline{
-    max-width:46ch;margin-top:1rem;font-size:1.1rem;color:var(--ink-soft);
+  .hero .subheader{
+    font-size:1.15rem;color:var(--ink-soft);max-width:60ch;line-height:1.5;margin-bottom:1.5rem;
   }
-  .hero .cta-row{margin-top:1.5rem;display:flex;gap:.75rem;flex-wrap:wrap}
-  .btn{
-    display:inline-block;font-family:var(--font-display);font-weight:600;
-    padding:.7rem 1.3rem;border-radius:10px;border:1.5px solid var(--ink);
-    color:var(--ink);transition:transform .12s ease,background .12s ease;
-  }
-  .btn:hover{text-decoration:none;transform:translateY(-1px)}
-  .btn.primary{background:var(--signal);border-color:var(--signal);color:#fff}
 
-  /* ===== Widget grid ===== */
+  /* ===== Grid ===== */
   .grid{
-    display:grid;gap:1.25rem;
+    display:grid;gap:1.5rem;
     grid-template-columns:repeat(12,1fr);
   }
   .widget{
     background:var(--card);
     border:1px solid var(--line);
     border-radius:var(--radius);
-    padding:1.4rem 1.5rem 1.6rem;
-    box-shadow:0 1px 2px rgba(22,35,47,.05);
-    display:flex;flex-direction:column;
+    padding:2rem;
+    box-shadow:0 1px 3px rgba(26,35,50,.08);
   }
-  .widget-label{
-    font-family:var(--font-mono);font-size:11.5px;letter-spacing:.08em;
-    text-transform:uppercase;color:var(--ink-soft);
-    display:flex;align-items:center;gap:.5rem;margin-bottom:.9rem;
+  .widget h2{
+    font-family:var(--font-display);
+    font-size:1.4rem;
+    font-weight:600;
+    margin-bottom:1rem;
   }
-  .widget-label::before{content:"";width:9px;height:9px;border-radius:3px;background:var(--signal);flex:0 0 auto}
-  .widget h2{font-family:var(--font-display);font-size:1.35rem;font-weight:600;margin-bottom:.6rem}
+  .widget p{margin-bottom:1rem}
+  .widget p:last-child{margin-bottom:0}
+
   .span-12{grid-column:span 12}
   .span-7{grid-column:span 7}
   .span-6{grid-column:span 6}
   .span-5{grid-column:span 5}
   .span-4{grid-column:span 4}
   .span-8{grid-column:span 8}
+  
   @media (max-width:840px){
     .span-7,.span-5,.span-6,.span-4,.span-8{grid-column:span 12}
   }
 
-  /* Video widget */
+  /* ===== Video widget ===== */
   .video-frame{
     position:relative;width:100%;aspect-ratio:16/9;
-    background:var(--ink);border-radius:10px;overflow:hidden;
+    background:#000;border-radius:8px;overflow:hidden;margin-bottom:1rem;
   }
   .video-frame video{width:100%;height:100%;display:block}
 
-  /* Book list widget */
-  ol.books{list-style:none;counter-reset:book;column-gap:2rem}
-  ol.books li{
-    counter-increment:book;display:flex;gap:.85rem;align-items:baseline;
-    padding:.5rem 0;border-bottom:1px dashed var(--line);
+  /* ===== Sections ===== */
+  .section-title{
+    font-family:var(--font-display);
+    font-size:1.2rem;
+    font-weight:600;
+    margin-top:1.5rem;
+    margin-bottom:.75rem;
+    color:var(--ink);
   }
-  ol.books li:last-child{border-bottom:none}
-  ol.books li::before{
-    content:counter(book,decimal-leading-zero);
-    font-family:var(--font-mono);font-size:.85rem;color:var(--amber);flex:0 0 2ch;
-  }
-  ol.books .title{font-weight:600}
-  ol.books .author{color:var(--ink-soft);font-size:.92rem}
+  .section-title:first-child{margin-top:0}
 
-  /* Skills widget */
-  .chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.25rem}
+  /* ===== Lists and details ===== */
+  ul, ol{margin-left:1.5rem;margin-top:.5rem;margin-bottom:1rem}
+  li{margin-bottom:.5rem}
+
+  /* ===== Skills chips ===== */
+  .chips{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.8rem}
   .chip{
-    font-family:var(--font-mono);font-size:12.5px;
-    border:1px solid var(--line);border-radius:999px;padding:.35rem .75rem;
-    background:var(--bg);
+    font-family:var(--font-mono);font-size:12px;
+    border:1px solid var(--line);border-radius:6px;padding:.4rem .8rem;
+    background:var(--bg);color:var(--ink);
   }
 
-  /* Wins / highlights */
-  .wins{display:grid;gap:1rem;margin-top:.35rem}
-  .win{border-left:3px solid var(--status);padding-left:1rem}
-  .win strong{font-family:var(--font-display)}
-  .win small{color:var(--ink-soft)}
+  /* ===== Highlights ===== */
+  .highlights{display:grid;gap:1rem;margin-top:1rem}
+  .highlight{
+    border-left:3px solid var(--signal);
+    padding-left:1rem;
+  }
+  .highlight strong{font-family:var(--font-display);display:block}
+  .highlight small{color:var(--ink-soft);display:block;margin-top:.3rem}
 
-  /* Contact widget */
-  .contact-row{display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:.4rem;font-family:var(--font-mono);font-size:.95rem}
+  /* ===== Contact ===== */
+  .contact-links{
+    display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:1rem;
+    font-family:var(--font-mono);font-size:.95rem;
+  }
 
+  /* ===== Footer ===== */
   footer{
-    text-align:center;margin-top:3rem;color:var(--ink-soft);
-    font-family:var(--font-mono);font-size:12.5px;
+    text-align:center;margin-top:4rem;padding-top:2rem;
+    border-top:1px solid var(--line);
+    color:var(--ink-soft);
+    font-family:var(--font-mono);font-size:.85rem;
   }
 </style>
 </head>
 <body>
 
-<!-- Signature: console-style status bar -->
-<div class="statusbar" role="banner">
-  <span class="sys">darrylsarkisian.com</span>
-  <span class="status-live"><span class="dot" aria-hidden="true"></span>STATUS: OPEN TO OPPORTUNITIES</span>
-  <span class="spacer"></span>
-  <span id="localtime" class="sys"></span>
-  <a href="#contact">contact →</a>
-</div>
+<!-- Clean navbar — no desperation ===== -->
+<header class="navbar" role="banner">
+  <div class="navbar-inner">
+    <span class="navbar-brand">darrylsarkisian.com</span>
+    <nav class="navbar-links">
+      <a href="#about">About</a>
+      <a href="#work">Work</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
 
 <div class="wrap">
 
   <header class="hero">
-    <h1>Darryl Sarkisian.<br>Sales Engineer who <span>shows</span>, not tells.</h1>
-    <p class="tagline">I build and demo the things I sell — ITSM workflows, MCP servers, and integrations that make a room of skeptical IT leaders lean forward. This site is my running demo of me.</p>
-    <div class="cta-row">
-      <a class="btn primary" href="#demos">Watch a demo</a>
-      <a class="btn" href="#contact">Get my résumé</a>
-    </div>
+    <h1>Darryl Sarkisian</h1>
+    <p class="subheader">Sales engineer and builder. I come from access control systems and technical support—which means I understand infrastructure at a deeper level. Now I specialize in ITSM platforms, workflow automation, and connecting enterprise tools to AI systems via MCP servers.</p>
   </header>
 
   <main class="grid">
 
-    <!-- Demo video widget -->
-    <section class="widget span-7" id="demos" aria-labelledby="demos-h">
-      <div class="widget-label">Widget · Live demos</div>
-      <h2 id="demos-h">Sales engineering in action</h2>
+    <!-- Demo video ===== -->
+    <section class="widget span-7" id="work">
+      <h2>Demo: Sales engineering in action</h2>
       <div class="video-frame">
-        <video id="demo-player" controls style="background:#000">
+        <video controls style="background:#000">
           <source src="videos/servicenow-demo.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
       </div>
-      <p style="margin-top:.8rem;color:var(--ink-soft);font-size:.95rem">
-        This is how I work — building and demoing the things I sell. Want a live walkthrough tailored to your stack? <a href="#contact">Book 30 minutes.</a>
-      </p>
+      <p>This is how I work — building the things I demo, not just talking about them. If you want a live walkthrough specific to your stack, <a href="#contact">let's schedule time</a>.</p>
     </section>
 
-    <!-- About widget -->
-    <section class="widget span-5" aria-labelledby="about-h">
-      <div class="widget-label">Widget · About me</div>
-      <h2 id="about-h">Who I am</h2>
-      <p>I'm a sales engineer who came up through the technical side — which means when a prospect asks "but can it actually do X?", I open a terminal instead of a slide deck.</p>
-      <p style="margin-top:.7rem">I specialize in ITSM platforms, workflow automation, and lately building MCP servers that connect AI assistants to enterprise tooling. Off the clock, I read a lot of history — the list is one widget over.</p>
-      <p style="margin-top:.7rem;color:var(--ink-soft)">Based in the San Francisco Bay Area.</p>
+    <!-- About ===== -->
+    <section class="widget span-5" id="about">
+      <h2>About me</h2>
+      <p>I started in access control systems engineering — wiring door gateways and control panels onsite. That gave me a foundation in physical infrastructure, systems thinking, and troubleshooting.</p>
+      <p>From there, I moved into technical support for on-premise solutions, working my way up to sales engineering. That trajectory matters: I can talk to infrastructure teams because I've lived that world.</p>
+      <p>I'm fluent in C# and Python. I care about building things that actually work, not just demos that impress.</p>
+      <p style="margin-top:1rem;color:var(--ink-soft);font-size:.95rem">Based in the San Francisco Bay Area.</p>
     </section>
 
-    <!-- Wins widget -->
-    <section class="widget span-5" aria-labelledby="wins-h">
-      <div class="widget-label">Widget · Track record</div>
-      <h2 id="wins-h">Recent wins</h2>
-      <div class="wins">
-        <div class="win"><strong>Shortened a 6-week POC to 8 days</strong><br><small>Pre-built the integration harness before the kickoff call.</small></div>
-        <div class="win"><strong>Built an MCP server prototype live in a demo</strong><br><small>Prospect's own ticket data flowing through Claude in under an hour.</small></div>
-        <div class="win"><strong>92% demo-to-next-step conversion</strong><br><small>Replace with your real number — recruiters love a metric.</small></div>
-      </div>
-    </section>
-
-    <!-- Skills widget -->
-    <section class="widget span-7" aria-labelledby="skills-h">
-      <div class="widget-label">Widget · Toolkit</div>
-      <h2 id="skills-h">What I work with</h2>
+    <!-- What I work with ===== -->
+    <section class="widget span-6">
+      <h2>What I work with</h2>
       <div class="chips">
         <span class="chip">ServiceNow</span>
         <span class="chip">Jira Service Management</span>
         <span class="chip">MCP Servers</span>
         <span class="chip">REST APIs</span>
         <span class="chip">Python</span>
+        <span class="chip">C#</span>
         <span class="chip">JavaScript</span>
-        <span class="chip">Webhooks &amp; Automation</span>
-        <span class="chip">Discovery &amp; POC design</span>
-        <span class="chip">Executive demos</span>
-        <span class="chip">RFP responses</span>
+        <span class="chip">Webhooks</span>
+        <span class="chip">Access Control Systems</span>
+        <span class="chip">ITSM Workflows</span>
       </div>
-      <p style="margin-top:1rem;color:var(--ink-soft);font-size:.95rem">Swap these chips for your actual stack — keep it honest, recruiters verify.</p>
     </section>
 
-    <!-- Books widget -->
-    <section class="widget span-6" aria-labelledby="books-h">
-      <div class="widget-label">Widget · Off the clock</div>
-      <h2 id="books-h">Top 10 history books</h2>
-      <ol class="books">
-        <li><span class="title">The Guns of August</span><span class="author">Barbara Tuchman</span></li>
-        <li><span class="title">SPQR</span><span class="author">Mary Beard</span></li>
-        <li><span class="title">The Rise and Fall of the Third Reich</span><span class="author">William Shirer</span></li>
-        <li><span class="title">1776</span><span class="author">David McCullough</span></li>
-        <li><span class="title">Genghis Khan and the Making of the Modern World</span><span class="author">Jack Weatherford</span></li>
-        <li><span class="title">The Splendid and the Vile</span><span class="author">Erik Larson</span></li>
-        <li><span class="title">Salt: A World History</span><span class="author">Mark Kurlansky</span></li>
-        <li><span class="title">Team of Rivals</span><span class="author">Doris Kearns Goodwin</span></li>
-        <li><span class="title">The Silk Roads</span><span class="author">Peter Frankopan</span></li>
-        <li><span class="title">A Distant Mirror</span><span class="author">Barbara Tuchman</span></li>
-      </ol>
+    <!-- Recent work ===== -->
+    <section class="widget span-6">
+      <h2>Recent highlights</h2>
+      <div class="highlights">
+        <div class="highlight">
+          <strong>Compressed a 6-week POC to 8 days</strong>
+          <small>Built the integration harness before the kickoff call.</small>
+        </div>
+        <div class="highlight">
+          <strong>Live MCP server demo</strong>
+          <small>Prospect's ticket data flowing through Claude in under an hour.</small>
+        </div>
+        <div class="highlight">
+          <strong>Strong technical credibility</strong>
+          <small>Infrastructure teams trust the demo because it's real, not theater.</small>
+        </div>
+      </div>
     </section>
 
-    <!-- Contact widget -->
-    <section class="widget span-6" id="contact" aria-labelledby="contact-h">
-      <div class="widget-label">Widget · Contact</div>
-      <h2 id="contact-h">Let's talk</h2>
-      <p>Hiring a sales engineer, or want a live demo of anything on this page? Reach out — I respond fast (it's kind of my job).</p>
-      <div class="contact-row">
-        <a href="mailto:darryl@darrylsarkisian.com">email</a>
-        <a href="https://www.linkedin.com/in/YOUR-HANDLE" rel="noopener">linkedin</a>
-        <a href="https://github.com/YOUR-HANDLE" rel="noopener">github</a>
-        <a href="/DarrylSarkisian_Resume_2026.pdf">résumé (pdf)</a>
+    <!-- Interests ===== -->
+    <section class="widget span-12">
+      <h2>Off the clock</h2>
+      <p>I'm a serious reader of 19th century history. The full list of favorites lives on my desk, but a few anchors: Barbara Tuchman's work (especially <em>The Guns of August</em>), David McCullough, and Erik Larson. I'm interested in the American Civil War era through the early 20th century—the arc from industrialization through geopolitical shift.</p>
+      <p>I'm also a committed Warriors and 49ers fan. The sports fandom and history reading aren't disconnected; both are about systems, strategy, and how people perform under pressure.</p>
+    </section>
+
+    <!-- Contact ===== -->
+    <section class="widget span-12" id="contact">
+      <h2>Let's talk</h2>
+      <p>Looking to hire a sales engineer, want a technical deep-dive, or just interested in talking shop? Reach out.</p>
+      <div class="contact-links">
+        <a href="mailto:darrylsarkisian@gmail.com">email</a>
+        <a href="https://www.linkedin.com/in/darrylsarkisian/">linkedin</a>
+        <a href="https://github.com/darrylsarkisian-debug">github</a>
+        <a href="/DarrylSarkisian_Resume_2026.pdf">résumé</a>
       </div>
     </section>
 
   </main>
 
   <footer>
-    built by hand · HTML5 + CSS · no framework required — that's the point
+    built by hand · HTML5 + CSS · no framework ·  <a href="https://github.com/darrylsarkisian-debug">source on github</a>
   </footer>
+
 </div>
 
-<script>
-  // Live local time in the status bar
-  function tick(){
-    const el=document.getElementById('localtime');
-    el.textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+" LOCAL";
-  }
-  tick(); setInterval(tick,30000);
-
-  // Demo video player is now a native HTML5 element with controls
-  // No tab switching needed with single video
-</script>
 </body>
 </html>
