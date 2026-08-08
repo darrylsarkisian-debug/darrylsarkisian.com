@@ -179,8 +179,11 @@
   // ---- HOVER-TO-ZOOM (dwell) ----
   // Hold the cursor still over a spot for DWELL_MS and the map
   // eases in to ~2x closer (one Leaflet zoom level = 2x scale).
-  // Move the mouse again and it eases back out to where it
-  // started, so this is a preview, not a permanent zoom.
+  // Once zoomed in, the view holds still — so you can move the
+  // cursor across the zoomed map to click a country/marker
+  // without it snapping back out from under you. It only eases
+  // back to the original view once you move the cursor off the
+  // map (or start dragging), i.e. once you're actually done.
   // =========================================================
   const DWELL_MS = 2000;
   const ZOOM_STEP = 1;       // +1 level ≈ 2x closer
@@ -213,14 +216,14 @@
   map.on('mousemove', e => {
     // Ignore synthetic movement while dragging/panning with the mouse held down.
     if (e.originalEvent && e.originalEvent.buttons) { clearTimeout(dwellTimer); return; }
-    if (isZoomedIn) zoomBackOut();       // real movement cancels the current preview
-    armDwellTimer(e.latlng);              // ...and starts the dwell clock at the new spot
+    if (isZoomedIn) return;               // already zoomed in — leave it alone so clicks land
+    armDwellTimer(e.latlng);              // still zoomed out — keep tracking the dwell clock
   });
 
-  // NOTE: intentionally NOT listening for 'zoomstart' here — our own
-  // flyTo() calls fire that event too, which would immediately cancel
-  // the zoom-in we just triggered. 'mousemove' and 'dragstart' are
-  // real user input, so they're safe signals to end the preview.
+  // Zoom back out only on a real "I'm done here" signal: the cursor
+  // leaving the map, or the user grabbing the map to pan it manually.
+  // (Deliberately NOT hooked to 'zoomstart' — our own flyTo() calls
+  // fire that event too and would cancel themselves immediately.)
   map.on('mouseout dragstart', () => {
     clearTimeout(dwellTimer);
     if (isZoomedIn) zoomBackOut();
@@ -239,9 +242,9 @@
           layer.on({
             mouseover: e => e.target.setStyle(COUNTRY_HOVER_STYLE),
             mouseout: e => e.target.setStyle(COUNTRY_STYLE),
-            click: () => {
+            click: e => {
               const name = (feature.properties && feature.properties.name) || 'Unknown region';
-              openNewsWindow({ id: 'country-' + name.replace(/\s+/g, '-'), name, scope: 'country' });
+              openNewsWindow({ id: 'country-' + name.replace(/\s+/g, '-'), name, scope: 'country' }, e.originalEvent);
             }
           });
         }
@@ -286,7 +289,7 @@
     marker.bindTooltip(loc.name, { direction: 'top', offset: [0, -4] });
     marker.on('click', (e) => {
       L.DomEvent.stopPropagation(e); // don't also fire the country polygon underneath
-      openNewsWindow({ ...loc, scope: 'city' });
+      openNewsWindow({ ...loc, scope: 'city' }, e.originalEvent);
     });
   });
 
@@ -377,14 +380,43 @@
     w.document.close();
   }
 
-  function openNewsWindow(location) {
+  const POPUP_WIDTH = 380;
+  const POPUP_HEIGHT = 340;
+
+  // Figure out where on the physical screen the click happened, and
+  // return a { left, top } for window.open positioned just to the
+  // right of it — clamped so the popup never opens off-screen.
+  function popupPositionNear(nativeEvent) {
+    const hasScreenCoords = nativeEvent && typeof nativeEvent.screenX === 'number' && nativeEvent.screenX !== 0;
+    const clickX = hasScreenCoords ? nativeEvent.screenX : (window.screenX || 0) + (window.outerWidth || 800) / 2;
+    const clickY = hasScreenCoords ? nativeEvent.screenY : (window.screenY || 0) + (window.outerHeight || 600) / 2;
+
+    let left = clickX + 20;   // just to the right of the cursor
+    let top = clickY - 60;    // roughly level with the click, not below it
+
+    const screenW = window.screen.availWidth || 1280;
+    const screenH = window.screen.availHeight || 800;
+    left = Math.max(10, Math.min(left, screenW - POPUP_WIDTH - 10));
+    top = Math.max(10, Math.min(top, screenH - POPUP_HEIGHT - 10));
+    return { left: Math.round(left), top: Math.round(top) };
+  }
+
+  function openNewsWindow(location, nativeEvent) {
+    const { left, top } = popupPositionNear(nativeEvent);
     // Open synchronously on the click so popup blockers don't intervene,
     // then fill it in once the (simulated) API call resolves.
-    const w = window.open('', 'news_' + location.id, 'width=380,height=340,resizable=yes,scrollbars=yes');
+    const w = window.open(
+      '',
+      'news_' + location.id,
+      `width=${POPUP_WIDTH},height=${POPUP_HEIGHT},left=${left},top=${top},resizable=yes,scrollbars=yes`
+    );
     if (!w) {
       alert('Pop-up blocked — please allow pop-ups for this site to see local news.');
       return;
     }
+    // Some browsers ignore left/top in the feature string when a
+    // window with this name already exists — moveTo() re-asserts it.
+    try { w.moveTo(left, top); } catch (err) { /* cross-origin/unsupported — ignore */ }
     renderLoading(w, location);
     fetchLocalNews(location).then(item => renderNews(w, location, item));
   }
