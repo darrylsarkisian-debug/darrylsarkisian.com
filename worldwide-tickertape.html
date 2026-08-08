@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="WorldWide TickerTape Of Things — an interactive world map demo by Darryl Sarkisian. Click a city or country for a local news pull via a mock API.">
+<title>WorldWide TickerTape Of Things — Darryl Sarkisian</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+  :root{
+    --bg:#F7F9FB;
+    --card:#FFFFFF;
+    --ink:#1a2332;
+    --ink-soft:#526277;
+    --line:#E1E8F0;
+    --signal:#1F6FEB;
+    --accent:#C97A12;
+    --radius:12px;
+    --font-display:"Space Grotesk",sans-serif;
+    --font-body:"IBM Plex Sans",sans-serif;
+    --font-mono:"IBM Plex Mono",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--signal);text-decoration:none}
+  a:hover{text-decoration:underline}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-offset:3px}
+
+  header.navbar{
+    background:#fff;
+    border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:40;
+    padding:1rem 1.25rem;
+  }
+  .navbar-inner{
+    max-width:1120px;margin:0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+    font-family:var(--font-mono);font-size:.9rem;
+  }
+  .navbar-brand{font-weight:600;color:var(--ink)}
+  .navbar-links{display:flex;gap:1.5rem}
+  .navbar-links a{color:var(--ink-soft)}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:3rem 1.25rem 4rem}
+
+  header.hero{padding:0 0 1.75rem}
+  .hero h1{
+    font-family:var(--font-display);
+    font-size:clamp(2rem,4.5vw,2.9rem);
+    font-weight:700;line-height:1.1;letter-spacing:-.02em;margin-bottom:1rem;
+  }
+  .hero .subheader{
+    font-size:1.05rem;color:var(--ink-soft);max-width:64ch;line-height:1.5;
+  }
+
+  /* ===== Ticker marquee ===== */
+  .ticker-wrap{
+    background:var(--ink);border-radius:10px;overflow:hidden;margin:1.75rem 0;
+  }
+  .ticker-track{
+    display:flex;width:max-content;
+    animation:ticker-scroll 30s linear infinite;
+  }
+  .ticker-track span{
+    white-space:nowrap;color:#DCE7EF;font-family:var(--font-mono);
+    font-size:.8rem;padding:.65rem 2rem;letter-spacing:.02em;
+  }
+  @keyframes ticker-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @media (prefers-reduced-motion:reduce){.ticker-track{animation:none}}
+
+  /* ===== Widget ===== */
+  .widget{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:2rem;
+    box-shadow:0 1px 3px rgba(26,35,50,.08);
+  }
+  .widget h2{font-family:var(--font-display);font-size:1.3rem;font-weight:600;margin-bottom:.9rem}
+
+  #map{
+    height:560px;width:100%;border-radius:10px;
+    border:1px solid var(--line);background:var(--bg);
+  }
+  @media (max-width:640px){ #map{height:420px} }
+
+  .legend{
+    display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:1rem;
+    font-family:var(--font-mono);font-size:.78rem;color:var(--ink-soft);
+  }
+  .legend .swatch{display:inline-flex;align-items:center;gap:.45rem}
+  .legend .dot-swatch{width:10px;height:10px;border-radius:50%;background:var(--signal);display:inline-block}
+  .legend .box-swatch{width:12px;height:10px;border-radius:2px;background:#c9dcf0;border:1px solid #9db8d6;display:inline-block}
+
+  code{
+    font-family:var(--font-mono);background:var(--bg);border:1px solid var(--line);
+    border-radius:4px;padding:.1rem .35rem;font-size:.85em;
+  }
+
+  footer{
+    text-align:center;margin-top:4rem;padding-top:2rem;
+    border-top:1px solid var(--line);
+    color:var(--ink-soft);
+    font-family:var(--font-mono);font-size:.85rem;
+  }
+</style>
+</head>
+<body>
+
+<header class="navbar" role="banner">
+  <div class="navbar-inner">
+    <a href="index.html" class="navbar-brand" style="color:var(--ink)">← darrylsarkisian.com</a>
+    <nav class="navbar-links">
+      <a href="index.html#work">Work</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <header class="hero">
+    <h1>WorldWide TickerTape Of Things</h1>
+    <p class="subheader">An interactive world map wired to a live click-to-API pattern. Click a featured city (try the San Francisco Bay Area) or any country outline, and a small popup window pulls a local headline — title, source, and date.</p>
+  </header>
+
+  <div class="ticker-wrap" aria-hidden="true">
+    <div class="ticker-track" id="tickerTrack">
+      <span>🌍 WORLDWIDE TICKERTAPE OF THINGS — click any highlighted city marker or country outline for local headlines — currently wired to a mock API, not live news — try the San Francisco Bay Area marker to start — 🌍 WORLDWIDE TICKERTAPE OF THINGS — click any highlighted city marker or country outline for local headlines — currently wired to a mock API, not live news — try the San Francisco Bay Area marker to start —</span>
+      <span>🌍 WORLDWIDE TICKERTAPE OF THINGS — click any highlighted city marker or country outline for local headlines — currently wired to a mock API, not live news — try the San Francisco Bay Area marker to start — 🌍 WORLDWIDE TICKERTAPE OF THINGS — click any highlighted city marker or country outline for local headlines — currently wired to a mock API, not live news — try the San Francisco Bay Area marker to start —</span>
+    </div>
+  </div>
+
+  <section class="widget span-12">
+    <h2>Click the map for local headlines</h2>
+    <div id="map"></div>
+    <div class="legend">
+      <span class="swatch"><span class="dot-swatch"></span> Featured city — hyper-local pull</span>
+      <span class="swatch"><span class="box-swatch"></span> Country outline — national pull</span>
+    </div>
+    <p style="margin-top:1rem;color:var(--ink-soft);font-size:.85rem">
+      Results open in a small popup window — allow pop-ups for this site if nothing appears.
+      This is currently wired to a mock/fake local-news source for testing. Swap out <code>fetchLocalNews()</code>
+      in the page source for a real API (NewsAPI, GDELT, a regional outlet's RSS-to-JSON feed, etc.) to go live —
+      everything else in the click → fetch → popup pipeline stays the same.
+    </p>
+  </section>
+
+  <footer>
+    built by hand · HTML5 + CSS + Leaflet.js · <a href="index.html">back to darrylsarkisian.com</a>
+  </footer>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  // =========================================================
+  // ---- MAP SETUP ----
+  // =========================================================
+  const map = L.map('map', { worldCopyJump: true, minZoom: 2 }).setView([20, 10], 2);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    maxZoom: 18
+  }).addTo(map);
+
+  const COUNTRY_STYLE = { fillColor: '#DDE5EA', weight: 1, color: '#B7C4CE', fillOpacity: .55 };
+  const COUNTRY_HOVER_STYLE = { fillColor: '#c9dcf0', fillOpacity: .85, color: '#9db8d6' };
+
+  // Public, CORS-open GeoJSON of country boundaries.
+  fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
+    .then(r => r.json())
+    .then(geojson => {
+      L.geoJSON(geojson, {
+        style: () => COUNTRY_STYLE,
+        onEachFeature: (feature, layer) => {
+          layer.on({
+            mouseover: e => e.target.setStyle(COUNTRY_HOVER_STYLE),
+            mouseout: e => e.target.setStyle(COUNTRY_STYLE),
+            click: () => {
+              const name = (feature.properties && feature.properties.name) || 'Unknown region';
+              openNewsWindow({ id: 'country-' + name.replace(/\s+/g, '-'), name, scope: 'country' });
+            }
+          });
+        }
+      }).addTo(map);
+    })
+    .catch(err => console.error('Failed to load country boundaries:', err));
+
+  // ===== Featured cities/regions — finer-grained than country level =====
+  const FEATURED_LOCATIONS = [
+    { id: 'sf-bay',     name: 'San Francisco Bay Area', lat: 37.7749,  lon: -122.4194 },
+    { id: 'nyc',        name: 'New York City',          lat: 40.7128,  lon: -74.0060 },
+    { id: 'la',         name: 'Los Angeles',             lat: 34.0522,  lon: -118.2437 },
+    { id: 'chicago',    name: 'Chicago',                 lat: 41.8781,  lon: -87.6298 },
+    { id: 'seattle',    name: 'Seattle',                 lat: 47.6062,  lon: -122.3321 },
+    { id: 'toronto',    name: 'Toronto',                 lat: 43.6532,  lon: -79.3832 },
+    { id: 'mexico-city',name: 'Mexico City',             lat: 19.4326,  lon: -99.1332 },
+    { id: 'sao-paulo',  name: 'São Paulo',               lat: -23.5505, lon: -46.6333 },
+    { id: 'buenos-aires',name:'Buenos Aires',            lat: -34.6037, lon: -58.3816 },
+    { id: 'london',     name: 'London',                  lat: 51.5074,  lon: -0.1278 },
+    { id: 'paris',      name: 'Paris',                   lat: 48.8566,  lon: 2.3522 },
+    { id: 'berlin',     name: 'Berlin',                  lat: 52.5200,  lon: 13.4050 },
+    { id: 'madrid',     name: 'Madrid',                  lat: 40.4168,  lon: -3.7038 },
+    { id: 'rome',       name: 'Rome',                    lat: 41.9028,  lon: 12.4964 },
+    { id: 'istanbul',   name: 'Istanbul',                lat: 41.0082,  lon: 28.9784 },
+    { id: 'dubai',      name: 'Dubai',                   lat: 25.2048,  lon: 55.2708 },
+    { id: 'mumbai',     name: 'Mumbai',                  lat: 19.0760,  lon: 72.8777 },
+    { id: 'bangkok',    name: 'Bangkok',                 lat: 13.7563,  lon: 100.5018 },
+    { id: 'singapore',  name: 'Singapore',               lat: 1.3521,   lon: 103.8198 },
+    { id: 'hong-kong',  name: 'Hong Kong',               lat: 22.3193,  lon: 114.1694 },
+    { id: 'tokyo',      name: 'Tokyo',                   lat: 35.6762,  lon: 139.6503 },
+    { id: 'seoul',      name: 'Seoul',                   lat: 37.5665,  lon: 126.9780 },
+    { id: 'sydney',     name: 'Sydney',                  lat: -33.8688, lon: 151.2093 },
+    { id: 'cairo',      name: 'Cairo',                   lat: 30.0444,  lon: 31.2357 },
+    { id: 'lagos',      name: 'Lagos',                   lat: 6.5244,   lon: 3.3792 },
+    { id: 'johannesburg',name:'Johannesburg',            lat: -26.2041, lon: 28.0473 }
+  ];
+
+  FEATURED_LOCATIONS.forEach(loc => {
+    const marker = L.circleMarker([loc.lat, loc.lon], {
+      radius: 6, weight: 2, color: '#1F6FEB', fillColor: '#1F6FEB', fillOpacity: .85
+    }).addTo(map);
+    marker.bindTooltip(loc.name, { direction: 'top', offset: [0, -4] });
+    marker.on('click', (e) => {
+      L.DomEvent.stopPropagation(e); // don't also fire the country polygon underneath
+      openNewsWindow({ ...loc, scope: 'city' });
+    });
+  });
+
+  // =========================================================
+  // ---- FAKE / MOCK LOCAL NEWS API ----
+  // Replace fetchLocalNews() with a real call (NewsAPI, GDELT,
+  // a regional RSS-to-JSON bridge, etc.) when ready to go live.
+  // Everything downstream (openNewsWindow, render*) stays the same.
+  // =========================================================
+  const NEWS_TEMPLATES = [
+    '{loc} council approves new transit funding package',
+    'Local business district in {loc} sees record foot traffic',
+    '{loc} weather service issues seasonal outlook',
+    'Community groups in {loc} rally around new park proposal',
+    'Tech meetup draws a crowd in {loc} this week',
+    '{loc} school board debates new curriculum plan',
+    'Housing prices in {loc} show signs of cooling',
+    '{loc} transit authority unveils new route map',
+    'Local chefs put {loc} on the culinary map',
+    '{loc} hosts annual community festival this weekend',
+    'Small businesses in {loc} report strong holiday season',
+    '{loc} unveils plan to expand public wifi coverage'
+  ];
+  const SOURCE_SUFFIXES = ['Gazette', 'Tribune', 'Daily Wire', 'Herald', 'Press', 'Times', 'Local News Network', 'Observer', 'Standard', 'Register', 'Dispatch'];
+
+  function fetchLocalNews(location) {
+    // Simulated network latency so this behaves like a real async API call.
+    const delay = 500 + Math.random() * 700;
+    return new Promise(resolve => {
+      setTimeout(() => {
+        const template = NEWS_TEMPLATES[Math.floor(Math.random() * NEWS_TEMPLATES.length)];
+        const title = template.replace(/\{loc\}/g, location.name);
+        const suffix = SOURCE_SUFFIXES[Math.floor(Math.random() * SOURCE_SUFFIXES.length)];
+        const source = `${location.name} ${suffix}`;
+        const daysAgo = Math.floor(Math.random() * 4);
+        const d = new Date();
+        d.setDate(d.getDate() - daysAgo);
+        const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        resolve({ title, source, date });
+      }, delay);
+    });
+  }
+
+  // =========================================================
+  // ---- SMALL POPUP WINDOW ----
+  // =========================================================
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  function popupShell(bodyHtml) {
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Local News</title><style>
+      body{margin:0;background:#16232F;color:#DCE7EF;font-family:'IBM Plex Mono',Consolas,monospace;padding:1.4rem}
+      .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8FA6B8;margin-bottom:.9rem}
+      h1{font-size:1.05rem;font-family:Arial,sans-serif;line-height:1.4;margin:0 0 1.1rem;font-weight:700}
+      .row{display:flex;justify-content:space-between;gap:1rem;font-size:.8rem;padding:.5rem 0;border-top:1px dashed #33465A}
+      .row span:first-child{color:#8FA6B8}
+      .row span:last-child{text-align:right}
+      .loading{color:#7EE2B0;font-size:.85rem}
+      button{margin-top:1.4rem;background:transparent;border:1px solid #33465A;color:#DCE7EF;padding:.5rem 1rem;
+        border-radius:6px;font-family:inherit;font-size:.8rem;cursor:pointer}
+      button:hover{background:#1F2E3D}
+      .mock-tag{margin-top:1rem;font-size:.7rem;color:#5A6E80}
+    </style></head><body>${bodyHtml}</body></html>`;
+  }
+
+  function renderLoading(w, location) {
+    w.document.open();
+    w.document.write(popupShell(`
+      <div class="label">Local News · ${escapeHtml(location.name)}</div>
+      <h1>Fetching latest local headline…</h1>
+      <div class="loading">● contacting local news API…</div>
+    `));
+    w.document.close();
+  }
+
+  function renderNews(w, location, item) {
+    if (w.closed) return;
+    w.document.open();
+    w.document.write(popupShell(`
+      <div class="label">Local News · ${escapeHtml(location.name)}</div>
+      <h1>${escapeHtml(item.title)}</h1>
+      <div class="row"><span>Source</span><span>${escapeHtml(item.source)}</span></div>
+      <div class="row"><span>Date</span><span>${escapeHtml(item.date)}</span></div>
+      <button onclick="window.close()">Close</button>
+      <div class="mock-tag">MOCK DATA — for demo purposes, not a live feed</div>
+    `));
+    w.document.close();
+  }
+
+  function openNewsWindow(location) {
+    // Open synchronously on the click so popup blockers don't intervene,
+    // then fill it in once the (simulated) API call resolves.
+    const w = window.open('', 'news_' + location.id, 'width=380,height=340,resizable=yes,scrollbars=yes');
+    if (!w) {
+      alert('Pop-up blocked — please allow pop-ups for this site to see local news.');
+      return;
+    }
+    renderLoading(w, location);
+    fetchLocalNews(location).then(item => renderNews(w, location, item));
+  }
+</script>
+</body>
+</html>

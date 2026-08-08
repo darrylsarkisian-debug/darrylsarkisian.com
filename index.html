@@ -49,7 +49,12 @@
     font-family:var(--font-mono);font-size:.9rem;
   }
   .navbar-brand{
-    font-weight:600;color:var(--ink)
+    font-weight:600;color:var(--ink);
+    display:flex;align-items:center;gap:1rem;flex-wrap:wrap;
+  }
+  .navbar-brand .ticker-link{
+    font-weight:500;color:var(--signal);font-size:.82rem;
+    border-left:1px solid var(--line);padding-left:1rem;
   }
   .navbar-links{
     display:flex;gap:1.5rem;
@@ -232,7 +237,7 @@
 <!-- Clean navbar — no desperation ===== -->
 <header class="navbar" role="banner">
   <div class="navbar-inner">
-    <span class="navbar-brand">darrylsarkisian.com</span>
+    <span class="navbar-brand">darrylsarkisian.com <a class="ticker-link" href="worldwide-tickertape.html">WorldWide TickerTape Of Things</a></span>
     <nav class="navbar-links">
       <a href="#about">About</a>
       <a href="#work">Work</a>
