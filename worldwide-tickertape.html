@@ -175,6 +175,57 @@
     maxZoom: 18
   }).addTo(map);
 
+  // =========================================================
+  // ---- HOVER-TO-ZOOM (dwell) ----
+  // Hold the cursor still over a spot for DWELL_MS and the map
+  // eases in to ~2x closer (one Leaflet zoom level = 2x scale).
+  // Move the mouse again and it eases back out to where it
+  // started, so this is a preview, not a permanent zoom.
+  // =========================================================
+  const DWELL_MS = 2000;
+  const ZOOM_STEP = 1;       // +1 level ≈ 2x closer
+  const FLY_DURATION = 1.8;  // seconds — keeps it feeling slow/eased
+
+  let dwellTimer = null;
+  let homeView = null;       // { center, zoom } to ease back to
+  let isZoomedIn = false;
+
+  function armDwellTimer(latlng) {
+    clearTimeout(dwellTimer);
+    dwellTimer = setTimeout(() => zoomIntoPoint(latlng), DWELL_MS);
+  }
+
+  function zoomIntoPoint(latlng) {
+    if (isZoomedIn) return; // already mid-preview from this dwell
+    homeView = { center: map.getCenter(), zoom: map.getZoom() };
+    isZoomedIn = true;
+    const targetZoom = Math.min(map.getZoom() + ZOOM_STEP, map.getMaxZoom());
+    map.flyTo(latlng, targetZoom, { animate: true, duration: FLY_DURATION, easeLinearity: 0.25 });
+  }
+
+  function zoomBackOut() {
+    if (!isZoomedIn || !homeView) return;
+    isZoomedIn = false;
+    map.flyTo(homeView.center, homeView.zoom, { animate: true, duration: FLY_DURATION, easeLinearity: 0.25 });
+    homeView = null;
+  }
+
+  map.on('mousemove', e => {
+    // Ignore synthetic movement while dragging/panning with the mouse held down.
+    if (e.originalEvent && e.originalEvent.buttons) { clearTimeout(dwellTimer); return; }
+    if (isZoomedIn) zoomBackOut();       // real movement cancels the current preview
+    armDwellTimer(e.latlng);              // ...and starts the dwell clock at the new spot
+  });
+
+  // NOTE: intentionally NOT listening for 'zoomstart' here — our own
+  // flyTo() calls fire that event too, which would immediately cancel
+  // the zoom-in we just triggered. 'mousemove' and 'dragstart' are
+  // real user input, so they're safe signals to end the preview.
+  map.on('mouseout dragstart', () => {
+    clearTimeout(dwellTimer);
+    if (isZoomedIn) zoomBackOut();
+  });
+
   const COUNTRY_STYLE = { fillColor: '#DDE5EA', weight: 1, color: '#B7C4CE', fillOpacity: .55 };
   const COUNTRY_HOVER_STYLE = { fillColor: '#c9dcf0', fillOpacity: .85, color: '#9db8d6' };
 
