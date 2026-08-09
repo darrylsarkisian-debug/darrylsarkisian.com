@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Interactive U.S. choropleth map of presidential approval by state — a data-visualization demo by Darryl Sarkisian.">
+<title>Presidential Approval by State — Darryl Sarkisian</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+  :root{
+    --bg:#F7F9FB;
+    --card:#FFFFFF;
+    --ink:#1a2332;
+    --ink-soft:#526277;
+    --line:#E1E8F0;
+    --signal:#1F6FEB;
+    --accent:#C97A12;
+    --disapprove:#C6362E;
+    --radius:12px;
+    --font-display:"Space Grotesk",sans-serif;
+    --font-body:"IBM Plex Sans",sans-serif;
+    --font-mono:"IBM Plex Mono",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--signal);text-decoration:none}
+  a:hover{text-decoration:underline}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-offset:3px}
+
+  header.navbar{
+    background:#fff;
+    border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:40;
+    padding:1rem 1.25rem;
+  }
+  .navbar-inner{
+    max-width:1120px;margin:0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+    font-family:var(--font-mono);font-size:.9rem;flex-wrap:wrap;gap:.5rem;
+  }
+  .navbar-brand{font-weight:600;color:var(--ink)}
+  .navbar-links{display:flex;gap:1.5rem}
+  .navbar-links a{color:var(--ink-soft)}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:3rem 1.25rem 4rem}
+
+  header.hero{padding:0 0 1.75rem}
+  .hero h1{
+    font-family:var(--font-display);
+    font-size:clamp(2rem,4.5vw,2.9rem);
+    font-weight:700;line-height:1.1;letter-spacing:-.02em;margin-bottom:1rem;
+  }
+  .hero .subheader{
+    font-size:1.05rem;color:var(--ink-soft);max-width:66ch;line-height:1.5;
+  }
+
+  .widget{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:2rem;
+    box-shadow:0 1px 3px rgba(26,35,50,.08);
+  }
+  .widget h2{font-family:var(--font-display);font-size:1.3rem;font-weight:600;margin-bottom:.9rem}
+
+  #map{
+    height:560px;width:100%;border-radius:10px;
+    border:1px solid var(--line);background:var(--bg);
+  }
+  @media (max-width:640px){ #map{height:420px} }
+
+  .legend-bar{
+    margin-top:1.25rem;display:flex;flex-direction:column;gap:.4rem;max-width:420px;
+  }
+  .legend-gradient{
+    height:14px;border-radius:999px;
+    background:linear-gradient(90deg, var(--disapprove) 0%, #F2F0EC 50%, var(--signal) 100%);
+    border:1px solid var(--line);
+  }
+  .legend-labels{
+    display:flex;justify-content:space-between;
+    font-family:var(--font-mono);font-size:.72rem;color:var(--ink-soft);
+  }
+
+  .state-tooltip{
+    font-family:var(--font-mono) !important;font-size:.78rem !important;
+    background:var(--ink) !important;color:#DCE7EF !important;border:none !important;
+    border-radius:6px !important;padding:.5rem .7rem !important;
+    box-shadow:0 2px 8px rgba(0,0,0,.25) !important;
+  }
+  .state-tooltip::before{border-top-color:var(--ink) !important}
+
+  .disclaimer{
+    margin-top:1.25rem;padding:1rem 1.1rem;background:var(--bg);
+    border:1px solid var(--line);border-radius:8px;
+    font-size:.85rem;color:var(--ink-soft);
+  }
+  .disclaimer strong{color:var(--ink)}
+
+  code{
+    font-family:var(--font-mono);background:var(--bg);border:1px solid var(--line);
+    border-radius:4px;padding:.1rem .35rem;font-size:.85em;
+  }
+
+  footer{
+    text-align:center;margin-top:4rem;padding-top:2rem;
+    border-top:1px solid var(--line);
+    color:var(--ink-soft);
+    font-family:var(--font-mono);font-size:.85rem;
+  }
+</style>
+</head>
+<body>
+
+<header class="navbar" role="banner">
+  <div class="navbar-inner">
+    <a href="index.html" class="navbar-brand" style="color:var(--ink)">← darrylsarkisian.com</a>
+    <nav class="navbar-links">
+      <a href="worldwide-tickertape.html">WorldWide TickerTape</a>
+      <a href="index.html#work">Work</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <header class="hero">
+    <h1>Presidential Approval by State</h1>
+    <p class="subheader">A choropleth demo — each state is shaded by net approval (approve minus disapprove): more disapproval shades toward red, more approval shades toward blue. Hover a state for the exact numbers.</p>
+  </header>
+
+  <section class="widget span-12">
+    <h2>Trump job approval, by state</h2>
+    <div id="map"></div>
+    <div class="legend-bar">
+      <div class="legend-gradient"></div>
+      <div class="legend-labels">
+        <span>More disapproval</span>
+        <span>Even split</span>
+        <span>More approval</span>
+      </div>
+    </div>
+    <div class="disclaimer">
+      <strong>This is a snapshot, not a live feed.</strong> No free API publishes real-time, state-level presidential
+      approval — the two trackers that actually estimate this (Civiqs and Morning Consult) require paid access to their
+      underlying data. These numbers are a one-time snapshot compiled by
+      <a href="https://worldpopulationreview.com/state-rankings/trump-approval-rating-by-state" target="_blank" rel="noopener">World Population Review</a>,
+      aggregating Civiqs' state-level tracking with The Economist/YouGov modeled state estimates, as polled in
+      <strong>March 2026</strong>. Both sources model state-level results from national polling trends adjusted for
+      state demographics and voting history, rather than from large independent polls in every state — treat this as
+      a reasonable estimate, not precision polling, and expect it to be out of date by the time you're reading this.
+    </div>
+  </section>
+
+  <footer>
+    built by hand · HTML5 + CSS + Leaflet.js · <a href="index.html">back to darrylsarkisian.com</a>
+  </footer>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  // =========================================================
+  // ---- DATA ----
+  // Snapshot compiled by World Population Review from Civiqs +
+  // The Economist/YouGov state trackers, polled March 2026.
+  // https://worldpopulationreview.com/state-rankings/trump-approval-rating-by-state
+  // Keyed by full state name to match the GeoJSON "name" property.
+  // =========================================================
+  const APPROVAL_DATA = {
+    "Wyoming":         { approve: 59, disapprove: 34 },
+    "Oklahoma":        { approve: 57, disapprove: 39 },
+    "North Dakota":    { approve: 56, disapprove: 40 },
+    "West Virginia":   { approve: 56, disapprove: 37 },
+    "Arkansas":        { approve: 54, disapprove: 40 },
+    "Idaho":           { approve: 53, disapprove: 41 },
+    "Tennessee":       { approve: 53, disapprove: 41 },
+    "Alabama":         { approve: 51, disapprove: 42 },
+    "Montana":         { approve: 51, disapprove: 44 },
+    "South Dakota":    { approve: 51, disapprove: 42 },
+    "Indiana":         { approve: 49, disapprove: 46 },
+    "Kansas":          { approve: 49, disapprove: 45 },
+    "Louisiana":       { approve: 49, disapprove: 46 },
+    "Mississippi":     { approve: 49, disapprove: 46 },
+    "Nebraska":        { approve: 49, disapprove: 46 },
+    "Utah":            { approve: 49, disapprove: 44 },
+    "Kentucky":        { approve: 48, disapprove: 45 },
+    "Missouri":        { approve: 48, disapprove: 47 },
+    "South Carolina":  { approve: 46, disapprove: 49 },
+    "Arizona":         { approve: 44, disapprove: 52 },
+    "Florida":         { approve: 44, disapprove: 52 },
+    "Ohio":            { approve: 44, disapprove: 50 },
+    "Texas":           { approve: 44, disapprove: 52 },
+    "Alaska":          { approve: 43, disapprove: 51 },
+    "Iowa":            { approve: 42, disapprove: 52 },
+    "North Carolina":  { approve: 42, disapprove: 54 },
+    "Wisconsin":       { approve: 42, disapprove: 55 },
+    "Pennsylvania":    { approve: 39, disapprove: 55 },
+    "Georgia":         { approve: 38, disapprove: 57 },
+    "Nevada":          { approve: 38, disapprove: 56 },
+    "Maine":           { approve: 37, disapprove: 58 },
+    "Michigan":        { approve: 37, disapprove: 57 },
+    "Virginia":        { approve: 35, disapprove: 60 },
+    "Colorado":        { approve: 34, disapprove: 62 },
+    "Minnesota":       { approve: 34, disapprove: 60 },
+    "New Mexico":      { approve: 34, disapprove: 62 },
+    "Illinois":        { approve: 33, disapprove: 63 },
+    "New Jersey":      { approve: 33, disapprove: 64 },
+    "Delaware":        { approve: 32, disapprove: 64 },
+    "New Hampshire":   { approve: 32, disapprove: 62 },
+    "Connecticut":     { approve: 30, disapprove: 65 },
+    "New York":        { approve: 30, disapprove: 66 },
+    "Oregon":          { approve: 30, disapprove: 67 },
+    "Rhode Island":    { approve: 30, disapprove: 64 },
+    "Washington":      { approve: 28, disapprove: 67 },
+    "California":      { approve: 27, disapprove: 69 },
+    "Maryland":        { approve: 26, disapprove: 70 },
+    "Massachusetts":   { approve: 24, disapprove: 72 },
+    "Vermont":         { approve: 21, disapprove: 76 },
+    "Hawaii":          { approve: 19, disapprove: 78 }
+  };
+
+  // =========================================================
+  // ---- COLOR SCALE ----
+  // Zero-centered on net approval (approve - disapprove), so the
+  // color always reflects the real sign: net > 0 (more approve
+  // than disapprove) is always some shade of blue, net < 0 is
+  // always some shade of red — never just a relative ranking.
+  // NET_CAP is where the color reaches full saturation; anything
+  // beyond it (there are a couple of outliers) just clamps.
+  // =========================================================
+  const NET_CAP = 30;
+  const COLOR_DISAPPROVE = [198, 54, 46];   // --disapprove
+  const COLOR_NEUTRAL    = [242, 240, 236]; // near-white midpoint
+  const COLOR_APPROVE    = [31, 111, 235];  // --signal
+
+  function lerp(a, b, t) { return Math.round(a + (b - a) * t); }
+
+  function netApprovalColor(net) {
+    const t = Math.min(1, Math.abs(net) / NET_CAP);
+    const from = COLOR_NEUTRAL;
+    const to = net >= 0 ? COLOR_APPROVE : COLOR_DISAPPROVE;
+    const r = lerp(from[0], to[0], t);
+    const g = lerp(from[1], to[1], t);
+    const b = lerp(from[2], to[2], t);
+    return `rgb(${r},${g},${b})`;
+  }
+
+  const NO_DATA_STYLE = { fillColor: '#E1E8F0', weight: 1, color: '#C7D2DB', fillOpacity: .6 };
+
+  function styleForState(name) {
+    const stats = APPROVAL_DATA[name];
+    if (!stats) return NO_DATA_STYLE;
+    const net = stats.approve - stats.disapprove;
+    return { fillColor: netApprovalColor(net), weight: 1, color: '#ffffff', fillOpacity: .88 };
+  }
+
+  // =========================================================
+  // ---- MAP SETUP ----
+  // =========================================================
+  const map = L.map('map', { zoomSnap: 0.25, minZoom: 3, maxZoom: 7 }).setView([37.8, -96], 4);
+  map.attributionControl.setPrefix(false);
+
+  fetch('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json')
+    .then(r => r.json())
+    .then(geojson => {
+      const layer = L.geoJSON(geojson, {
+        style: feature => styleForState(feature.properties.name),
+        onEachFeature: (feature, featureLayer) => {
+          const name = feature.properties.name;
+          const stats = APPROVAL_DATA[name];
+          const label = stats
+            ? `<strong>${name}</strong><br>Approve ${stats.approve}% · Disapprove ${stats.disapprove}%<br>Net ${stats.approve - stats.disapprove > 0 ? '+' : ''}${stats.approve - stats.disapprove}`
+            : `<strong>${name}</strong><br>No data in this snapshot`;
+          featureLayer.bindTooltip(label, { sticky: true, className: 'state-tooltip' });
+          featureLayer.on({
+            mouseover: e => e.target.setStyle({ weight: 2, color: '#1a2332' }),
+            mouseout: e => e.target.setStyle(styleForState(name))
+          });
+        }
+      }).addTo(map);
+      map.fitBounds(layer.getBounds(), { padding: [10, 10] });
+    })
+    .catch(err => {
+      console.error('Failed to load US state boundaries:', err);
+      document.getElementById('map').innerHTML =
+        '<p style="padding:2rem;color:var(--ink-soft);font-family:var(--font-mono);font-size:.85rem">Map data failed to load — check your connection and reload.</p>';
+    });
+</script>
+</body>
+</html>

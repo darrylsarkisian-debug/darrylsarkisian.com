@@ -122,6 +122,7 @@
   <div class="navbar-inner">
     <a href="index.html" class="navbar-brand" style="color:var(--ink)">← darrylsarkisian.com</a>
     <nav class="navbar-links">
+      <a href="presidential-approval-map.html">Approval Map</a>
       <a href="index.html#work">Work</a>
       <a href="index.html#contact">Contact</a>
     </nav>
@@ -321,10 +322,32 @@
   }
 
   async function queryGdelt(phrase, timespan) {
-    const res = await fetch(buildGdeltUrl(phrase, timespan));
-    if (!res.ok) throw new Error(`GDELT request failed: ${res.status}`);
-    const data = await res.json();
-    return Array.isArray(data.articles) ? data.articles : [];
+    const url = buildGdeltUrl(phrase, timespan);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`GDELT request failed: ${res.status} for ${url}`);
+
+    // GDELT is documented to occasionally return malformed/non-JSON output
+    // (rather than a clean {"articles":[]}) for queries with zero matches,
+    // so parse the raw text ourselves instead of letting res.json() throw
+    // and get treated as a hard error.
+    const raw = await res.text();
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch (err) {
+      console.warn(`GDELT returned non-JSON output for "${phrase}" (timespan=${timespan || 'default'}) — treating as zero results. First 200 chars:`, raw.slice(0, 200));
+      return [];
+    }
+
+    // Accept a couple of plausible shapes in case the field name ever
+    // differs from the documented "articles" wrapper.
+    const articles = data.articles || data.Articles || (Array.isArray(data) ? data : []);
+    if (!Array.isArray(articles) || articles.length === 0) {
+      console.info(`GDELT: 0 articles for "${phrase}" (timespan=${timespan || 'default'}).`, url);
+      return [];
+    }
+    console.info(`GDELT: ${articles.length} article(s) for "${phrase}" (timespan=${timespan || 'default'}).`);
+    return articles;
   }
 
   // GDELT's seendate looks like "20260807T134500Z" — turn that into a Date.
