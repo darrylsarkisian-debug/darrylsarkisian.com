@@ -137,8 +137,8 @@
 
   <div class="ticker-wrap" aria-hidden="true">
     <div class="ticker-track" id="tickerTrack">
-      <span>🌍 WORLDWIDE TICKERTAPE OF THINGS — click any highlighted city marker or country outline for local headlines — currently wired to a mock API, not live news — try the San Francisco Bay Area marker to start — 🌍 WORLDWIDE TICKERTAPE OF THINGS — click any highlighted city marker or country outline for local headlines — currently wired to a mock API, not live news — try the San Francisco Bay Area marker to start —</span>
-      <span>🌍 WORLDWIDE TICKERTAPE OF THINGS — click any highlighted city marker or country outline for local headlines — currently wired to a mock API, not live news — try the San Francisco Bay Area marker to start — 🌍 WORLDWIDE TICKERTAPE OF THINGS — click any highlighted city marker or country outline for local headlines — currently wired to a mock API, not live news — try the San Francisco Bay Area marker to start —</span>
+      <span>🌍 WORLDWIDE TICKERTAPE OF THINGS — click any highlighted city marker or country outline for real local headlines, live from the GDELT Project's global news index — try the San Francisco Bay Area marker to start — 🌍 WORLDWIDE TICKERTAPE OF THINGS — click any highlighted city marker or country outline for real local headlines, live from the GDELT Project's global news index — try the San Francisco Bay Area marker to start —</span>
+      <span>🌍 WORLDWIDE TICKERTAPE OF THINGS — click any highlighted city marker or country outline for real local headlines, live from the GDELT Project's global news index — try the San Francisco Bay Area marker to start — 🌍 WORLDWIDE TICKERTAPE OF THINGS — click any highlighted city marker or country outline for real local headlines, live from the GDELT Project's global news index — try the San Francisco Bay Area marker to start —</span>
     </div>
   </div>
 
@@ -151,9 +151,10 @@
     </div>
     <p style="margin-top:1rem;color:var(--ink-soft);font-size:.85rem">
       Results open in a small popup window — allow pop-ups for this site if nothing appears.
-      This is currently wired to a mock/fake local-news source for testing. Swap out <code>fetchLocalNews()</code>
-      in the page source for a real API (NewsAPI, GDELT, a regional outlet's RSS-to-JSON feed, etc.) to go live —
-      everything else in the click → fetch → popup pipeline stays the same.
+      Headlines are pulled live from the <a href="https://www.gdeltproject.org/" target="_blank" rel="noopener">GDELT Project</a>'s
+      global news index (no API key, updated continuously) — click "Read full article" in the popup to
+      open the original source. If GDELT has no recent coverage for a spot, the popup falls back to a clearly
+      labeled placeholder headline instead of coming up empty.
     </p>
   </section>
 
@@ -244,7 +245,7 @@
             mouseout: e => e.target.setStyle(COUNTRY_STYLE),
             click: e => {
               const name = (feature.properties && feature.properties.name) || 'Unknown region';
-              openNewsWindow({ id: 'country-' + name.replace(/\s+/g, '-'), name, scope: 'country' }, e.originalEvent);
+              openNewsWindow({ id: 'country-' + name.replace(/\s+/g, '-'), name, q: name, scope: 'country' }, e.originalEvent);
             }
           });
         }
@@ -253,33 +254,36 @@
     .catch(err => console.error('Failed to load country boundaries:', err));
 
   // ===== Featured cities/regions — finer-grained than country level =====
+  // "q" is the search phrase sent to GDELT — usually just the city name,
+  // since the full "X Area"-style display name is often too narrow a
+  // phrase match to reliably turn up recent coverage.
   const FEATURED_LOCATIONS = [
-    { id: 'sf-bay',     name: 'San Francisco Bay Area', lat: 37.7749,  lon: -122.4194 },
-    { id: 'nyc',        name: 'New York City',          lat: 40.7128,  lon: -74.0060 },
-    { id: 'la',         name: 'Los Angeles',             lat: 34.0522,  lon: -118.2437 },
-    { id: 'chicago',    name: 'Chicago',                 lat: 41.8781,  lon: -87.6298 },
-    { id: 'seattle',    name: 'Seattle',                 lat: 47.6062,  lon: -122.3321 },
-    { id: 'toronto',    name: 'Toronto',                 lat: 43.6532,  lon: -79.3832 },
-    { id: 'mexico-city',name: 'Mexico City',             lat: 19.4326,  lon: -99.1332 },
-    { id: 'sao-paulo',  name: 'São Paulo',               lat: -23.5505, lon: -46.6333 },
-    { id: 'buenos-aires',name:'Buenos Aires',            lat: -34.6037, lon: -58.3816 },
-    { id: 'london',     name: 'London',                  lat: 51.5074,  lon: -0.1278 },
-    { id: 'paris',      name: 'Paris',                   lat: 48.8566,  lon: 2.3522 },
-    { id: 'berlin',     name: 'Berlin',                  lat: 52.5200,  lon: 13.4050 },
-    { id: 'madrid',     name: 'Madrid',                  lat: 40.4168,  lon: -3.7038 },
-    { id: 'rome',       name: 'Rome',                    lat: 41.9028,  lon: 12.4964 },
-    { id: 'istanbul',   name: 'Istanbul',                lat: 41.0082,  lon: 28.9784 },
-    { id: 'dubai',      name: 'Dubai',                   lat: 25.2048,  lon: 55.2708 },
-    { id: 'mumbai',     name: 'Mumbai',                  lat: 19.0760,  lon: 72.8777 },
-    { id: 'bangkok',    name: 'Bangkok',                 lat: 13.7563,  lon: 100.5018 },
-    { id: 'singapore',  name: 'Singapore',               lat: 1.3521,   lon: 103.8198 },
-    { id: 'hong-kong',  name: 'Hong Kong',               lat: 22.3193,  lon: 114.1694 },
-    { id: 'tokyo',      name: 'Tokyo',                   lat: 35.6762,  lon: 139.6503 },
-    { id: 'seoul',      name: 'Seoul',                   lat: 37.5665,  lon: 126.9780 },
-    { id: 'sydney',     name: 'Sydney',                  lat: -33.8688, lon: 151.2093 },
-    { id: 'cairo',      name: 'Cairo',                   lat: 30.0444,  lon: 31.2357 },
-    { id: 'lagos',      name: 'Lagos',                   lat: 6.5244,   lon: 3.3792 },
-    { id: 'johannesburg',name:'Johannesburg',            lat: -26.2041, lon: 28.0473 }
+    { id: 'sf-bay',     name: 'San Francisco Bay Area', q: 'San Francisco', lat: 37.7749,  lon: -122.4194 },
+    { id: 'nyc',        name: 'New York City',          q: 'New York City', lat: 40.7128,  lon: -74.0060 },
+    { id: 'la',         name: 'Los Angeles',             q: 'Los Angeles',   lat: 34.0522,  lon: -118.2437 },
+    { id: 'chicago',    name: 'Chicago',                 q: 'Chicago',       lat: 41.8781,  lon: -87.6298 },
+    { id: 'seattle',    name: 'Seattle',                 q: 'Seattle',       lat: 47.6062,  lon: -122.3321 },
+    { id: 'toronto',    name: 'Toronto',                 q: 'Toronto',       lat: 43.6532,  lon: -79.3832 },
+    { id: 'mexico-city',name: 'Mexico City',             q: 'Mexico City',   lat: 19.4326,  lon: -99.1332 },
+    { id: 'sao-paulo',  name: 'São Paulo',               q: 'Sao Paulo',     lat: -23.5505, lon: -46.6333 },
+    { id: 'buenos-aires',name:'Buenos Aires',            q: 'Buenos Aires',  lat: -34.6037, lon: -58.3816 },
+    { id: 'london',     name: 'London',                  q: 'London',        lat: 51.5074,  lon: -0.1278 },
+    { id: 'paris',      name: 'Paris',                   q: 'Paris',         lat: 48.8566,  lon: 2.3522 },
+    { id: 'berlin',     name: 'Berlin',                  q: 'Berlin',        lat: 52.5200,  lon: 13.4050 },
+    { id: 'madrid',     name: 'Madrid',                  q: 'Madrid',        lat: 40.4168,  lon: -3.7038 },
+    { id: 'rome',       name: 'Rome',                    q: 'Rome',          lat: 41.9028,  lon: 12.4964 },
+    { id: 'istanbul',   name: 'Istanbul',                q: 'Istanbul',      lat: 41.0082,  lon: 28.9784 },
+    { id: 'dubai',      name: 'Dubai',                   q: 'Dubai',         lat: 25.2048,  lon: 55.2708 },
+    { id: 'mumbai',     name: 'Mumbai',                  q: 'Mumbai',        lat: 19.0760,  lon: 72.8777 },
+    { id: 'bangkok',    name: 'Bangkok',                 q: 'Bangkok',       lat: 13.7563,  lon: 100.5018 },
+    { id: 'singapore',  name: 'Singapore',               q: 'Singapore',     lat: 1.3521,   lon: 103.8198 },
+    { id: 'hong-kong',  name: 'Hong Kong',               q: 'Hong Kong',     lat: 22.3193,  lon: 114.1694 },
+    { id: 'tokyo',      name: 'Tokyo',                   q: 'Tokyo',         lat: 35.6762,  lon: 139.6503 },
+    { id: 'seoul',      name: 'Seoul',                   q: 'Seoul',         lat: 37.5665,  lon: 126.9780 },
+    { id: 'sydney',     name: 'Sydney',                  q: 'Sydney',        lat: -33.8688, lon: 151.2093 },
+    { id: 'cairo',      name: 'Cairo',                   q: 'Cairo',         lat: 30.0444,  lon: 31.2357 },
+    { id: 'lagos',      name: 'Lagos',                   q: 'Lagos',         lat: 6.5244,   lon: 3.3792 },
+    { id: 'johannesburg',name:'Johannesburg',            q: 'Johannesburg',  lat: -26.2041, lon: 28.0473 }
   ];
 
   FEATURED_LOCATIONS.forEach(loc => {
@@ -294,10 +298,70 @@
   });
 
   // =========================================================
-  // ---- FAKE / MOCK LOCAL NEWS API ----
-  // Replace fetchLocalNews() with a real call (NewsAPI, GDELT,
-  // a regional RSS-to-JSON bridge, etc.) when ready to go live.
-  // Everything downstream (openNewsWindow, render*) stays the same.
+  // ---- LIVE NEWS: GDELT PROJECT DOC 2.0 API ----
+  // No API key, CORS open to any origin (Access-Control-Allow-Origin: *).
+  // Docs: https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/
+  // We search a quoted phrase (city or country name), first over the
+  // last week for freshness, and — since a quoted phrase can legitimately
+  // turn up nothing for smaller places in any given week — fall back to
+  // GDELT's default 3-month window before giving up.
+  // =========================================================
+  const GDELT_ENDPOINT = 'https://api.gdeltproject.org/api/v2/doc/doc';
+
+  function buildGdeltUrl(phrase, timespan) {
+    const params = new URLSearchParams({
+      query: `"${phrase}"`,
+      mode: 'artlist',
+      format: 'json',
+      maxrecords: '15',
+      sort: 'hybridrel'
+    });
+    if (timespan) params.set('timespan', timespan);
+    return `${GDELT_ENDPOINT}?${params.toString()}`;
+  }
+
+  async function queryGdelt(phrase, timespan) {
+    const res = await fetch(buildGdeltUrl(phrase, timespan));
+    if (!res.ok) throw new Error(`GDELT request failed: ${res.status}`);
+    const data = await res.json();
+    return Array.isArray(data.articles) ? data.articles : [];
+  }
+
+  // GDELT's seendate looks like "20260807T134500Z" — turn that into a Date.
+  function parseGdeltDate(seendate) {
+    if (!seendate || seendate.length < 15) return null;
+    const iso = `${seendate.slice(0, 4)}-${seendate.slice(4, 6)}-${seendate.slice(6, 8)}T` +
+                `${seendate.slice(9, 11)}:${seendate.slice(11, 13)}:${seendate.slice(13, 15)}Z`;
+    const d = new Date(iso);
+    return isNaN(d) ? null : d;
+  }
+
+  // Returns { title, source, date, url } from a real GDELT article, or
+  // null if GDELT genuinely has no matching coverage for this query.
+  async function fetchGdeltNews(location) {
+    const phrase = location.q || location.name;
+    let articles = await queryGdelt(phrase, '1week');
+    if (articles.length === 0) {
+      articles = await queryGdelt(phrase, null); // widen to GDELT's default 3-month window
+    }
+    if (articles.length === 0) return null;
+
+    // Pick from the top few most-relevant results so re-clicking a spot
+    // doesn't always show the exact same headline.
+    const pick = articles[Math.floor(Math.random() * Math.min(articles.length, 5))];
+    const parsedDate = parseGdeltDate(pick.seendate);
+    return {
+      title: pick.title || `${location.name} coverage`,
+      source: pick.domain || 'unknown source',
+      date: parsedDate ? parsedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'recent',
+      url: pick.url || null
+    };
+  }
+
+  // =========================================================
+  // ---- MOCK NEWS FALLBACK ----
+  // Used only if GDELT errors out or genuinely has no coverage for a
+  // spot, so a click never dead-ends on an empty popup.
   // =========================================================
   const NEWS_TEMPLATES = [
     '{loc} council approves new transit funding package',
@@ -315,9 +379,9 @@
   ];
   const SOURCE_SUFFIXES = ['Gazette', 'Tribune', 'Daily Wire', 'Herald', 'Press', 'Times', 'Local News Network', 'Observer', 'Standard', 'Register', 'Dispatch'];
 
-  function fetchLocalNews(location) {
+  function fetchMockNews(location) {
     // Simulated network latency so this behaves like a real async API call.
-    const delay = 500 + Math.random() * 700;
+    const delay = 400 + Math.random() * 500;
     return new Promise(resolve => {
       setTimeout(() => {
         const template = NEWS_TEMPLATES[Math.floor(Math.random() * NEWS_TEMPLATES.length)];
@@ -328,9 +392,20 @@
         const d = new Date();
         d.setDate(d.getDate() - daysAgo);
         const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        resolve({ title, source, date });
+        resolve({ title, source, date, url: null, isMock: true });
       }, delay);
     });
+  }
+
+  // Try GDELT first; fall back to the mock generator on error or no results.
+  async function fetchLocalNews(location) {
+    try {
+      const live = await fetchGdeltNews(location);
+      if (live) return live;
+    } catch (err) {
+      console.error('GDELT fetch failed, falling back to mock data:', err);
+    }
+    return fetchMockNews(location);
   }
 
   // =========================================================
@@ -349,6 +424,9 @@
       .row span:first-child{color:#8FA6B8}
       .row span:last-child{text-align:right}
       .loading{color:#7EE2B0;font-size:.85rem}
+      .source-link{display:block;margin-top:1.1rem;color:#7EB8FF;font-size:.82rem;text-decoration:none}
+      .source-link:hover{text-decoration:underline}
+      .source-link::after{content:" ↗"}
       button{margin-top:1.4rem;background:transparent;border:1px solid #33465A;color:#DCE7EF;padding:.5rem 1rem;
         border-radius:6px;font-family:inherit;font-size:.8rem;cursor:pointer}
       button:hover{background:#1F2E3D}
@@ -361,27 +439,34 @@
     w.document.write(popupShell(`
       <div class="label">Local News · ${escapeHtml(location.name)}</div>
       <h1>Fetching latest local headline…</h1>
-      <div class="loading">● contacting local news API…</div>
+      <div class="loading">● querying the GDELT global news index…</div>
     `));
     w.document.close();
   }
 
   function renderNews(w, location, item) {
     if (w.closed) return;
+    const sourceLink = item.url
+      ? `<a class="source-link" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">Read the full article at ${escapeHtml(item.source)}</a>`
+      : '';
+    const statusTag = item.isMock
+      ? 'FALLBACK MOCK DATA — GDELT had no matching coverage for this spot'
+      : 'LIVE — via the GDELT Project (api.gdeltproject.org)';
     w.document.open();
     w.document.write(popupShell(`
       <div class="label">Local News · ${escapeHtml(location.name)}</div>
       <h1>${escapeHtml(item.title)}</h1>
       <div class="row"><span>Source</span><span>${escapeHtml(item.source)}</span></div>
       <div class="row"><span>Date</span><span>${escapeHtml(item.date)}</span></div>
+      ${sourceLink}
       <button onclick="window.close()">Close</button>
-      <div class="mock-tag">MOCK DATA — for demo purposes, not a live feed</div>
+      <div class="mock-tag">${statusTag}</div>
     `));
     w.document.close();
   }
 
   const POPUP_WIDTH = 380;
-  const POPUP_HEIGHT = 340;
+  const POPUP_HEIGHT = 370;
 
   // Figure out where on the physical screen the click happened, and
   // return a { left, top } for window.open positioned just to the
