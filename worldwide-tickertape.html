@@ -443,6 +443,8 @@
       body{margin:0;background:#16232F;color:#DCE7EF;font-family:'IBM Plex Mono',Consolas,monospace;padding:1.4rem}
       .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8FA6B8;margin-bottom:.9rem}
       h1{font-size:1.05rem;font-family:Arial,sans-serif;line-height:1.4;margin:0 0 1.1rem;font-weight:700}
+      .title-link{color:#DCE7EF;text-decoration:none}
+      .title-link:hover{color:#7EB8FF;text-decoration:underline}
       .row{display:flex;justify-content:space-between;gap:1rem;font-size:.8rem;padding:.5rem 0;border-top:1px dashed #33465A}
       .row span:first-child{color:#8FA6B8}
       .row span:last-child{text-align:right}
@@ -469,6 +471,9 @@
 
   function renderNews(w, location, item) {
     if (w.closed) return;
+    const titleHtml = item.url
+      ? `<a class="title-link" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)}</a>`
+      : escapeHtml(item.title);
     const sourceLink = item.url
       ? `<a class="source-link" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">Read the full article at ${escapeHtml(item.source)}</a>`
       : '';
@@ -478,7 +483,7 @@
     w.document.open();
     w.document.write(popupShell(`
       <div class="label">Local News · ${escapeHtml(location.name)}</div>
-      <h1>${escapeHtml(item.title)}</h1>
+      <h1>${titleHtml}</h1>
       <div class="row"><span>Source</span><span>${escapeHtml(item.source)}</span></div>
       <div class="row"><span>Date</span><span>${escapeHtml(item.date)}</span></div>
       ${sourceLink}
@@ -490,6 +495,25 @@
 
   const POPUP_WIDTH = 380;
   const POPUP_HEIGHT = 370;
+
+  // =========================================================
+  // ---- CLOSE POPUPS WHEN THIS PAGE CLOSES ----
+  // Track every popup window we open so that if this tab/page is
+  // closed (or navigated away from), we close them right along with
+  // it instead of leaving orphaned windows behind.
+  // =========================================================
+  const openPopups = new Set();
+
+  function closeAllPopups() {
+    openPopups.forEach(w => {
+      try { if (w && !w.closed) w.close(); } catch (err) { /* cross-origin/unsupported — ignore */ }
+    });
+    openPopups.clear();
+  }
+  // 'pagehide' is the reliable signal on mobile/Safari; 'beforeunload'
+  // covers desktop cases pagehide can miss. Both are safe to run twice.
+  window.addEventListener('pagehide', closeAllPopups);
+  window.addEventListener('beforeunload', closeAllPopups);
 
   // Figure out where on the physical screen the click happened, and
   // return a { left, top } for window.open positioned just to the
@@ -522,6 +546,7 @@
       alert('Pop-up blocked — please allow pop-ups for this site to see local news.');
       return;
     }
+    openPopups.add(w);
     // Some browsers ignore left/top in the feature string when a
     // window with this name already exists — moveTo() re-asserts it.
     try { w.moveTo(left, top); } catch (err) { /* cross-origin/unsupported — ignore */ }
