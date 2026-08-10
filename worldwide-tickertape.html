@@ -471,12 +471,17 @@
 
   function renderNews(w, location, item) {
     if (w.closed) return;
+    // Mock headlines aren't real articles, so there's nothing genuine to
+    // link the title itself to — but we still want every popup to end in
+    // a working, honest link, so fall back to a live Google News search
+    // for the location instead of a dead end.
+    const searchFallbackUrl = `https://news.google.com/search?q=${encodeURIComponent(location.name)}&hl=en-US&gl=US&ceid=US:en`;
     const titleHtml = item.url
       ? `<a class="title-link" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)}</a>`
       : escapeHtml(item.title);
     const sourceLink = item.url
       ? `<a class="source-link" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">Read the full article at ${escapeHtml(item.source)}</a>`
-      : '';
+      : `<a class="source-link" href="${escapeHtml(searchFallbackUrl)}" target="_blank" rel="noopener noreferrer">Search current headlines for ${escapeHtml(location.name)}</a>`;
     const statusTag = item.isMock
       ? 'FALLBACK MOCK DATA — GDELT had no matching coverage for this spot'
       : 'LIVE — via the GDELT Project (api.gdeltproject.org)';
